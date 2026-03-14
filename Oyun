@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matematik Fabrikası - Pixar Edition</title>
+    <style>
+        /* CSS: GÖRSEL TASARIM */
+        body {
+            background: linear-gradient(135deg, #74b9ff, #a29bfe);
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+        }
+
+        #game-card {
+            background: white;
+            padding: 40px;
+            border-radius: 40px;
+            box-shadow: 0 20px 0 rgba(0,0,0,0.1), 0 30px 50px rgba(0,0,0,0.2);
+            text-align: center;
+            width: 350px;
+            position: relative;
+        }
+
+        .character { font-size: 70px; margin-bottom: 10px; transition: 0.3s; }
+
+        .level-btn {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 5px 0 rgba(0,0,0,0.1);
+        }
+
+        .level-btn:active { transform: translateY(3px); box-shadow: none; }
+
+        .kolay { background: #55efc4; color: #00b894; }
+        .orta { background: #ffeaa7; color: #d3a400; }
+        .zor { background: #ff7675; color: #d63031; }
+
+        input {
+            width: 80%;
+            padding: 15px;
+            margin: 20px 0;
+            border: 4px solid #dfe6e9;
+            border-radius: 20px;
+            font-size: 32px;
+            text-align: center;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        /* Dinamik Renk Sınıfları */
+        input.kolay-input { border-color: #55efc4; background-color: #e8fdf5; }
+        input.orta-input { border-color: #ffeaa7; background-color: #fff9e6; }
+        input.zor-input { border-color: #ff7675; background-color: #fff2f2; }
+
+        #check-btn {
+            background: #6c5ce7;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 15px;
+            font-size: 20px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .jump { transform: translateY(-20px) scale(1.1); }
+        
+        .score-tag { font-weight: bold; color: #636e72; }
+    </style>
+</head>
+<body>
+
+<div id="game-card">
+    <div id="setup-screen">
+        <div class="character">🤖</div>
+        <h2>Matematik Fabrikası</h2>
+        <p>Bir zorluk seç ve 100 puana ulaş!</p>
+        <button class="level-btn kolay" onclick="startGame('kolay')">🐣 Kolay (2-5)</button>
+        <button class="level-btn orta" onclick="startGame('orta')">🦊 Orta (2-10)</button>
+        <button class="level-btn zor" onclick="startGame('zor')">🚀 Zor (10-15)</button>
+    </div>
+
+    <div id="play-screen" style="display:none">
+        <div class="score-tag">Puan: <span id="score">0</span> / 100</div>
+        <div class="character" id="robot">🤖</div>
+        <h1 id="question">? x ?</h1>
+        <input type="number" id="answer" placeholder="?" autocomplete="off">
+        <button id="check-btn">CEVAPLA</button>
+    </div>
+
+    <div id="finish-screen" style="display:none">
+        <h1 style="font-size: 60px;">🏆</h1>
+        <h2>MÜKEMMEL!</h2>
+        <p>100 Puan toplayarak fabrikayı tamamladın.</p>
+        <button class="level-btn kolay" onclick="location.reload()">TEKRAR OYNA</button>
+    </div>
+</div>
+
+<script>
+    let num1, num2, correctAnswer, score = 0;
+    let minNum, maxNum;
+
+    const setupScreen = document.getElementById('setup-screen');
+    const playScreen = document.getElementById('play-screen');
+    const finishScreen = document.getElementById('finish-screen');
+    const robot = document.getElementById('robot');
+    const answerInput = document.getElementById('answer');
+    const scoreEl = document.getElementById('score');
+    const questionEl = document.getElementById('question');
+
+    function startGame(diff) {
+        if (diff === 'kolay') { minNum = 2; maxNum = 5; }
+        else if (diff === 'orta') { minNum = 2; maxNum = 10; }
+        else { minNum = 10; maxNum = 15; }
+
+        answerInput.className = diff + "-input";
+        setupScreen.style.display = 'none';
+        playScreen.style.display = 'block';
+        generateQuestion();
+    }
+
+    function generateQuestion() {
+        num1 = Math.floor(Math.random() * (maxNum - minNum + 1)) + minNum;
+        num2 = Math.floor(Math.random() * (maxNum - minNum + 1)) + minNum;
+        correctAnswer = num1 * num2;
+        questionEl.innerText = `${num1} x ${num2}`;
+        answerInput.value = "";
+        answerInput.focus();
+    }
+
+    function checkAnswer() {
+        const userAns = parseInt(answerInput.value);
+        if (userAns === correctAnswer) {
+            score += 10;
+            robot.innerText = "🤩";
+            robot.classList.add('jump');
+            setTimeout(() => {
+                robot.classList.remove('jump');
+                robot.innerText = "🤖";
+            }, 600);
+        } else {
+            score = Math.max(0, score - 5);
+            robot.innerText = "🤔";
+            answerInput.style.backgroundColor = "#fab1a0";
+            setTimeout(() => { 
+                answerInput.style.backgroundColor = ""; 
+                robot.innerText = "🤖";
+            }, 300);
+        }
+        scoreEl.innerText = score;
+        if (score >= 100) {
+            playScreen.style.display = 'none';
+            finishScreen.style.display = 'block';
+        } else {
+            generateQuestion();
+        }
+    }
+
+    document.getElementById('check-btn').onclick = checkAnswer;
+    answerInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') checkAnswer();
+    });
+</script>
+
+</body>
+</html>
